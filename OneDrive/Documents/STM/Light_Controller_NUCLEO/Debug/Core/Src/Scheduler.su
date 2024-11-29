@@ -1,0 +1,8 @@
+../Core/Src/Scheduler.c:6:6:SCH_Init	4	static
+../Core/Src/Scheduler.c:10:14:SCH_Add_Task	32	static
+../Core/Src/Scheduler.c:34:6:SCH_Add_Task_Dispatcher	32	static
+../Core/Src/Scheduler.c:57:6:Delete_Task_Dispatcher	16	static
+../Core/Src/Scheduler.c:64:6:Delete_Task	24	static
+../Core/Src/Scheduler.c:77:6:SCH_Update	4	static
+../Core/Src/Scheduler.c:83:6:SCH_Dispatcher	24	static
+../Core/Src/Scheduler.c:107:6:HAL_TIM_PeriodElapsedCallback	16	static
