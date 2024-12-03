@@ -1,5 +1,0 @@
-Note:
-Đồng thời: Mang hướng luân phiên
-Song song: Cùng lúc
-Additional preference: 
-"Modern operating system", Andrew S.Tanenbaum and Herbert Bos, Pearson Education
