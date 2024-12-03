@@ -136,7 +136,6 @@ void printLightNotify () {
 		}
 	}
 }
-
 void printLight1Mode () {
 	if (Mode == NORMAL) {
 		int col = 1, row = 2;
@@ -240,6 +239,8 @@ void changeMode( ) {
 		break;
 	}
 }
+
+
 /* USER CODE END 0 */
 
 /**
@@ -288,11 +289,12 @@ int main(void)
   SCH_Init();
   /* USER CODE END 2 */
 
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   SCH_Add_Task(clearLCD, 0, 0);
-  SCH_Add_Task(cursorOff, 0, 0);
-  SCH_Add_Task(blinkingOff, 0, 0);
+  SCH_Add_Task(cursorOff, 3, 0);
+  SCH_Add_Task(blinkingOff, 6, 0);
 
   SCH_Add_Task(printLightNotify, 0, 353);
 //  SCH_Add_Task(printLight2, 0, 1000);
@@ -305,7 +307,7 @@ int main(void)
 
   SCH_Add_Task(Button_Read, 0, TIMER_CYCLE);
   SCH_Add_Task(Traffic_Light_FSM_Run, 0, TIMER_CYCLE);
-  SCH_Add_Task(traficLightFSM, 0, TIMER_CYCLE);
+  SCH_Add_Task(trafficLightFSM, 0, TIMER_CYCLE);
   while (1)
   {
 	  SCH_Dispatcher();

@@ -11,10 +11,12 @@ TIM_HandleTypeDef * tim;
 int init = 0;
 int startup = 0;
 int setFlag = 0;
+int waitSwitchingFlag = 0;
 int changeModeFlag = 1;
 struct lightStatus lightController;
 enum FSM_Mode Mode = NORMAL;
 int isLight1Manual = 1;
+int waitSwitchingTaskID = -1;
 
 int count = 0, led_count = 0, amber_blinking_count = 0, long_pressed_count = 0;
 int milliSec = 0, second = Green;
@@ -55,6 +57,13 @@ void Traffic_Light_FSM_Init (GPIO_TypeDef * Button1_Port, int Button1_Pin,
 	LIGHT2_Port [1] = LIGHT2_Sig2_Port;
 	LIGHT2_Pin [0] = LIGHT2_Sig1_Pin;
 	LIGHT2_Pin [1] = LIGHT2_Sig2_Pin;
+
+	uint32_t dataSetup = readData(START_ADDR_PAGE);
+	if ((dataSetup >> 24) == 1) {
+	  RED_Timer = (dataSetup >> 16) & 0xFF;
+	  AMBER_Timer = (dataSetup >> 8) & 0xFF;
+	  GREEN_Timer = dataSetup & 0xFF;
+    }
 
 }
 
@@ -174,10 +183,13 @@ void Traffic_Light_FSM_Run () {
 		break;
 	case MANUAL:
 		if (Is_Button_Pressed(BUTTON3) && !Is_Button_Long_Pressed(BUTTON3)) {
+			if (waitSwitchingFlag)
+				Delete_Task(waitSwitchingTaskID);
 			modePreset (NORMAL);
 			changeModeFlag = 1;
+			waitSwitchingFlag = 0;
 		}
-		if (Is_Button_Pressed(BUTTON1) && !Is_Button_Long_Pressed(BUTTON1)) {
+		if (Is_Button_Pressed(BUTTON1) && !Is_Button_Long_Pressed(BUTTON1) && waitSwitchingFlag == 0) {
 			switchRoute();
 		}
 		break;
@@ -209,7 +221,11 @@ void display_Light () {
 /*controllerInit used to reload the value of green light time and red light time
 for the traffic light before enter normal mode*/
 void controllerInit (void) {
-	lightController.isLight1 = 1;
+	if (Mode == MANUAL) {
+		lightController.isLight1 = isLight1Manual;
+	} else {
+		lightController.isLight1 = 1;
+	}
 	lightController.currentState = Green;
 	second = GREEN_Timer;
 	redLightTimer = RED_Timer;
@@ -307,6 +323,9 @@ void saveState () {
 	RED_Timer = settingBuffer[0];
 	AMBER_Timer = settingBuffer[1];
 	GREEN_Timer = settingBuffer[2];
+
+	uint32_t data = (1U << 24) | (RED_Timer << 16) | (AMBER_Timer << 8) | GREEN_Timer;
+	writePage(START_ADDR_PAGE, END_ADDR_PAGE, data);
 }
 
 /*This function is to increase and make sure if it valid*/
@@ -329,25 +348,33 @@ void resetSettingBuffer () {
 
 /*Preparing for the next state when we make state transition of FSM*/
 void modePreset (enum FSM_Mode mode) {
-	Mode = mode;
-	if (Mode != NORMAL) {
+	if (mode != NORMAL) {
 		turnOffLight();
-		if (Mode != MANUAL)
+		if (mode != MANUAL) {
 			displayMode(mode);
+		}
 		else {
-			isLight1Manual = 1;
+			isLight1Manual = lightController.isLight1;
 			manualModeInit();
 		}
 	} else {
 		controllerInit ();
 	}
+	Mode = mode;
 	count = 0;
 }
 void manualModeInit() {
-	HAL_GPIO_WritePin(LIGHT1_Port[0], LIGHT1_Pin[0], GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LIGHT1_Port[1], LIGHT1_Pin[1], GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LIGHT2_Port[0], LIGHT2_Pin[0], GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LIGHT2_Port[1], LIGHT2_Pin[1], GPIO_PIN_SET);
+	if (isLight1Manual) {
+		HAL_GPIO_WritePin(LIGHT1_Port[0], LIGHT1_Pin[0], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LIGHT1_Port[1], LIGHT1_Pin[1], GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LIGHT2_Port[0], LIGHT2_Pin[0], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LIGHT2_Port[1], LIGHT2_Pin[1], GPIO_PIN_SET);
+	} else {
+		HAL_GPIO_WritePin(LIGHT2_Port[0], LIGHT2_Pin[0], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LIGHT2_Port[1], LIGHT2_Pin[1], GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LIGHT1_Port[0], LIGHT1_Pin[0], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LIGHT1_Port[1], LIGHT1_Pin[1], GPIO_PIN_SET);
+	}
 }
 void switchGreenLight () {
 	if (isLight1Manual) {
@@ -362,6 +389,7 @@ void switchGreenLight () {
 		HAL_GPIO_WritePin(LIGHT1_Port[1], LIGHT1_Pin[1], GPIO_PIN_RESET);
 	}
 	isLight1Manual = !isLight1Manual;
+	waitSwitchingFlag = 0;
 }
 void switchRoute () {
 	if (isLight1Manual) {
@@ -371,7 +399,8 @@ void switchRoute () {
 		HAL_GPIO_WritePin(LIGHT2_Port[0], LIGHT2_Pin[0], GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(LIGHT2_Port[1], LIGHT2_Pin[1], GPIO_PIN_SET);
 	}
-	SCH_Add_Task(switchGreenLight, 2000, 0);
+	waitSwitchingTaskID = SCH_Add_Task(switchGreenLight, 2000, 0);
+	waitSwitchingFlag = 1;
 }
 void checkButton2LongPressed () {
 	if (Is_Button_Long_Pressed(BUTTON2)) {
@@ -393,7 +422,7 @@ void checkLongPressed() {
 		break;
 	}
 }
-void traficLightFSM () {
+void trafficLightFSM () {
     if (++count >= blinkCount)	{
         count = 0;
         switch (Mode) {

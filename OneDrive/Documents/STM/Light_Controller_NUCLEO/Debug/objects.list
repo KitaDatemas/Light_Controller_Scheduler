@@ -1,3 +1,4 @@
+"./Core/Src/Flash.o"
 "./Core/Src/I2C_LCD.o"
 "./Core/Src/Scheduler.o"
 "./Core/Src/Traffic_Light_FSM.o"

@@ -8,6 +8,7 @@
 #ifndef INC_TRAFFIC_LIGHT_FSM_H_
 #define INC_TRAFFIC_LIGHT_FSM_H_
 #include "main.h"
+#include "Flash.h"
 #include "button.h"
 #define TIMER 1
 
@@ -41,6 +42,8 @@ extern int redLightTimer;
 extern int isLight1Manual;
 extern enum FSM_Mode Mode;
 extern int changeModeFlag;
+extern int waitSwitchingFlag;
+extern int waiSwitchingTaskID;
 
 enum lightState {Red = 5, Yellow = 2, Green = 3};
 extern int second, startup;
@@ -79,5 +82,5 @@ void switchRoute ();
 void checkButton2LongPressed ();
 void checkLongPressed();
 void increaseTimer (int * buffer);
-void traficLightFSM ();
+void trafficLightFSM ();
 #endif /* INC_TRAFFIC_LIGHT_FSM_H_ */

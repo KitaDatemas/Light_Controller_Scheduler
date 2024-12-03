@@ -26,7 +26,7 @@ Core/Src/Traffic_Light_FSM.o: ../Core/Src/Traffic_Light_FSM.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/button.h
+ ../Core/Inc/Flash.h ../Core/Inc/button.h
 ../Core/Inc/Traffic_Light_FSM.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -55,4 +55,5 @@ Core/Src/Traffic_Light_FSM.o: ../Core/Src/Traffic_Light_FSM.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+../Core/Inc/Flash.h:
 ../Core/Inc/button.h:
